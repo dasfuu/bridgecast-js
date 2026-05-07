@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MIDI Fader</title>
+    <style>
+        body {
+            background: #222;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .fader-container {
+            width: 80px;
+            height: 300px;
+            position: relative;
+        }
+
+        /* Track */
+        .track {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 100%;
+            background: linear-gradient(to right, #111, #444, #111);
+            border-radius: 6px;
+            box-shadow: inset 0 0 5px #000;
+        }
+
+        /* Fill (level indicator) */
+        .fill {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            background: linear-gradient(to top, #00ffcc, #0099ff);
+            border-radius: 6px;
+        }
+
+        /* Knob */
+        .knob {
+            position: absolute;
+            left: 50%;
+            transform: translate(-50%, 50%);
+            width: 50px;
+            height: 20px;
+            background: linear-gradient(to bottom, #ddd, #888);
+            border-radius: 4px;
+            box-shadow:
+                    0 2px 4px rgba(0,0,0,0.6),
+                    inset 0 1px 2px rgba(255,255,255,0.5);
+            cursor: pointer;
+        }
+
+        /* Grip lines */
+        .knob::before {
+            content: "";
+            position: absolute;
+            top: 4px;
+            left: 8px;
+            right: 8px;
+            height: 2px;
+            background: #555;
+            box-shadow: 0 4px 0 #555, 0 8px 0 #555;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="fader-container" id="fader">
+    <div class="track"></div>
+    <div class="fill" id="fill"></div>
+    <div class="knob" id="knob"></div>
+</div>
+
+<script>
+    const fader = document.getElementById("fader");
+    const knob = document.getElementById("knob");
+    const fill = document.getElementById("fill");
+
+    let dragging = false;
+
+    const min = 0;
+    const max = fader.offsetHeight;
+
+    function setPosition(y) {
+        const rect = fader.getBoundingClientRect();
+        let pos = y - rect.top;
+
+        pos = Math.max(min, Math.min(max, pos));
+
+        knob.style.bottom = (fader.offsetHeight - pos) + "px";
+        fill.style.height = (fader.offsetHeight - pos) + "px";
+
+        // Normalize to MIDI range (0–127)
+        const value = Math.round((1 - pos / max) * 127);
+        console.log("MIDI value:", value);
+    }
+
+    knob.addEventListener("mousedown", () => dragging = true);
+    document.addEventListener("mouseup", () => dragging = false);
+
+    document.addEventListener("mousemove", (e) => {
+        if (dragging) setPosition(e.clientY);
+    });
+
+    // Click on track to jump
+    fader.addEventListener("click", (e) => {
+        setPosition(e.clientY);
+    });
+</script>
+
+</body>
+</html>
